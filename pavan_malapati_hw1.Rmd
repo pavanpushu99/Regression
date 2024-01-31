@@ -1,0 +1,77 @@
+---
+title: 'STAT 632 : Homework 1'
+author: "Pavan Malapati"
+date: "2024-01-31"
+output: pdf_document
+---
+3.a) Use read.csv() to load the playbill.csv data file into R. Make a scatter plot of the
+response versus the explanatory variable, and superimpose the least squares regression
+line.
+*Solution :*
+```{r}
+data <- read.csv("C:\\Users\\STSC\\Downloads\\playbill.csv")
+lm1 <- lm(CurrentWeek ~ LastWeek,data = data)
+summary(lm1)
+plot(data$CurrentWeek ~ data$LastWeek,xlab = "LastWeek",ylab = "CurrentWeek",cex=1.0)
+abline(lm1,col="orange",lwd = 1.5)
+```
+
+3.b) Calculate a 95% confidence interval for the intercept and slope of the regression model,
+Beta0 and Beta1 [hint: use the confint() function]. Is 1 a plausible value for Beta1?
+*Solution :*
+```{r}
+confint(lm1)
+```
+*Yes 1 is a plausible value for Beta1 because it lies in the confidence interval range*
+
+3.c) Use the fitted regression model to estimate the gross box office results for the current
+week (in dollars) for a production with $400,000 in gross box office the previous week.
+Find a 95% prediction interval for the gross box office results for the current week
+(in dollars) for a production with $400,000 in gross box office the previous week. Is
+$450,000 a feasible value for the gross box office results in the current week, for a
+production with $400,000 in gross box office the previous week?
+*Solution :*
+```{r}
+new_data = data.frame(LastWeek = 400000)
+predict(lm1, new_data, interval = "prediction") 
+```
+*No $450000 isn't a feasible value for the gross box office results in the current week because it is greater than the upper bound and doesn't lie in the prediction interval.*
+
+3.d) Some promoters of Broadway plays use the prediction rule that next week’s gross box office results will be equal to this week’s gross box office results. Comment on the appropriateness of this rule.
+*Solution*
+By examining the plot of the regression line superimposed on the scatter plot of the data, it appears that the model fits the data reasonably well. This suggests that there is a relationship between the explanatory and response variables, making the prediction plausible. However, it's essential to consider other factors beyond the model, such as external influences and potential fluctuations in audience behavior, to ensure the accuracy and reliability of the prediction.
+
+4.
+```{r}
+#install.packages("alr4")
+library(alr4)
+help(oldfaith)
+```
+a) Use the lm() function to perform a simple linear regression with Interval as the response and Duration as the predictor. Use the summary() function to print the results.
+*Solution*
+```{r}
+lm2 <- lm(Interval ~ Duration, data = oldfaith)
+summary(lm2)
+```
+
+b) Make a scatter plot of Interval versus Duration. Superimpose the least squares
+regression line on the scatter plot.
+*Solution*
+```{r}
+plot(Interval ~ Duration,xlab="Duration (sec)",ylab="Interval (min)", data = oldfaith,cex=0.75)
+abline(lm2, col="orange",lwd=1.5)
+```
+
+c) An individual has just arrived at the end of an eruption that lasted 250 seconds. What is the predicted amount of time the individual will have to wait until the next eruption? Calculate a 95% prediction interval for the time the individual will have to wait for the next eruption.
+*Solution*
+```{r}
+new_data1 = data.frame(Duration = 250)
+predict(lm2,new_data1,interval = "prediction")
+```
+
+d) Interpret the coefficient of determination (R2)
+*Solution*
+```{r}
+cor(oldfaith$Duration,oldfaith$Interval)^2
+```
+
