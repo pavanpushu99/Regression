@@ -1,0 +1,120 @@
+---
+title: 'STAT 632 : Homework 1'
+author: "Pavan Malapati"
+date: "2024-01-31"
+output: pdf_document
+---
+1.a) Write the equation for the least squares regression line
+*Solution*
+The equation for the least squares regression line is y= -1.1016 + 2.2606*x
+
+1.b)R performs a t-test to test whether the slope is significantly different than 0. State
+the null and alternative hypothesis for this test. Based on the p-value what is the
+conclusion of the test (i.e., reject or do not reject the null hypothesis)?
+*Solution*
+**Null Hypothesis (H0) : **The slope of regression is equal to zero.
+**Alternative Hypothesis (Ha) : **The slope of regression line is not equal to zero.
+P-value = <2e-16
+**Conclusion : **We reject the null hypothesis which means there is a relationship between x and y.
+
+1.c) Calculate the missing p-value for the intercept
+*Solution*
+```{r}
+n <- 50
+t <- -2.699
+df<- n-2
+p <- pt(t,df)
+p
+```
+
+1.d)  Calculate the missing t-statistic for the slope.
+*Solution*
+```{r}
+t_stat <- 2.2606/0.0981
+t_stat
+```
+
+1.e)Calculate a 95% confidence interval for the slope of the regression line. Does this interval agree with the results of the hypothesis test?
+*Solution*
+```{r}
+alpha <- 0.05
+pa <- 1-alpha/2
+t_star <- qt(pa,df)
+ci_high <- round(2.2606+t_star*0.0981,3)
+ci_low <- round(2.2606-t_star*0.0981,3)
+cat(ci_low,ci_high)
+```
+2)
+*Solution*
+
+3.a) Use read.csv() to load the playbill.csv data file into R. Make a scatter plot of the
+response versus the explanatory variable, and superimpose the least squares regression
+line.
+*Solution :*
+```{r}
+data <- read.csv("C:\\Users\\STSC\\Downloads\\playbill.csv")
+lm1 <- lm(CurrentWeek ~ LastWeek,data = data)
+summary(lm1)
+plot(data$CurrentWeek ~ data$LastWeek,xlab = "LastWeek",ylab = "CurrentWeek",cex=1.0)
+abline(lm1,col="orange",lwd = 1.5)
+```
+
+3.b) Calculate a 95% confidence interval for the intercept and slope of the regression model,
+Beta0 and Beta1 [hint: use the confint() function]. Is 1 a plausible value for Beta1?
+*Solution :*
+```{r}
+confint(lm1)
+```
+*Yes 1 is a plausible value for Beta1 because it lies in the confidence interval range*
+
+3.c) Use the fitted regression model to estimate the gross box office results for the current
+week (in dollars) for a production with $400,000 in gross box office the previous week.
+Find a 95% prediction interval for the gross box office results for the current week
+(in dollars) for a production with $400,000 in gross box office the previous week. Is
+$450,000 a feasible value for the gross box office results in the current week, for a
+production with $400,000 in gross box office the previous week?
+*Solution :*
+```{r}
+new_data = data.frame(LastWeek = 400000)
+predict(lm1, new_data, interval = "prediction") 
+```
+*No $450000 isn't a feasible value for the gross box office results in the current week because it is greater than the upper bound and doesn't lie in the prediction interval.*
+
+3.d) Some promoters of Broadway plays use the prediction rule that next week’s gross box office results will be equal to this week’s gross box office results. Comment on the appropriateness of this rule.
+*Solution*
+By examining the plot of the regression line superimposed on the scatter plot of the data, it appears that the model fits the data reasonably well. This suggests that there is a relationship between the explanatory and response variables, making the prediction plausible. However, it's essential to consider other factors beyond the model, such as external influences and potential fluctuations in audience behavior, to ensure the accuracy and reliability of the prediction.
+
+4.
+```{r}
+#install.packages("alr4")
+library(alr4)
+help(oldfaith)
+```
+a) Use the lm() function to perform a simple linear regression with Interval as the response and Duration as the predictor. Use the summary() function to print the results.
+*Solution*
+```{r}
+lm2 <- lm(Interval ~ Duration, data = oldfaith)
+summary(lm2)
+```
+
+b) Make a scatter plot of Interval versus Duration. Superimpose the least squares
+regression line on the scatter plot.
+*Solution*
+```{r}
+plot(Interval ~ Duration,xlab="Duration (sec)",ylab="Interval (min)", data = oldfaith,cex=0.75)
+abline(lm2, col="orange",lwd=1.5)
+```
+
+c) An individual has just arrived at the end of an eruption that lasted 250 seconds. What is the predicted amount of time the individual will have to wait until the next eruption? Calculate a 95% prediction interval for the time the individual will have to wait for the next eruption.
+*Solution*
+```{r}
+new_data1 = data.frame(Duration = 250)
+predict(lm2,new_data1,interval = "prediction")
+```
+
+d) Interpret the coefficient of determination (R2)
+*Solution*
+```{r}
+cor(oldfaith$Duration,oldfaith$Interval)^2
+```
+
