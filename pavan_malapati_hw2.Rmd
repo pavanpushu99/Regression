@@ -1,0 +1,157 @@
+---
+title: 'STAT 632 : Homework 02'
+author: "Pavan Malapati"
+date: "2024-02-16"
+output: pdf_document
+---
+
+Exercise 1.a) What are the assumptions for the simple linear regression model? Describe at least two diagnostics that are commonly used to check these assumptions ?
+
+Answer :
+
+The **assumptions** for simple linear regression model are,
+
+1\. Linear relationship between Y and x , i.e linearity between dependent and independent variables.
+
+2\. The errors are independent of each other.
+
+3\. The errors have common variances.
+
+4\. Normality
+
+Two diagnostics that are commonly used to check these assumptions are,
+
+1.**Residual plots :**Using the scatter plot we can check for the linearity of the variables. We can also determine if there are any leverage points and outliers by looking at the scatter plots.
+
+2.**Normal probability plot or a QQ plot :**By using the QQ plot we can determine the normality of the errors. If the plot produces points which are close to a straight line then the data is said to be distributed normally
+
+1.b) What does it mean for a point to be an outlier? For simple linear regression, what rule is commonly used to classify points as outliers?
+
+Answer : An outlier is a point which does not follow the pattern set by the rest data points, in a given data model.An outlier is a point whose standard residual is outside the interval -2,2.
+
+1.c) What does it mean for a point to have high leverage? For simple linear regression, what rule is commonly used to classify points of high leverage?
+
+Answer : High leverage points are those whose x value are greater when compared to all the other x values . High leverage point should have hi\>(4/n).
+
+1.d) For simple linear regression, what are the formulas for the error, residual, and standardized residual? What is Var(error) and Var(residual) (just write down the formulas, no derivation necessary)? Describe two reasons why it is useful to look at a plot of the standardized residuals versus the fitted values.
+
+Answer :
+
+![](632-hw2-1.d.jpg)
+
+The plot of standardized residuals versus the fitted values helps us to identify :
+
+1)  Non linearity
+
+2)  Unequal error variances
+
+3)  Outliers
+
+Exercise 2) Mark the following as either True or False. Provide a brief explanation if you marked your answer False.
+
+(a) A plot of the residuals versus fitted values is especially useful for checking the assumptions linearity and constant variance.
+
+    **TRUE**
+
+(b) The log transformation is most commonly used to stabilize the variance for count data.
+
+    **FALSE** : Square root transformation is used to stabilise the variance for count data.
+
+(c) When considering transformations for a simple linear regression model, it is always necessary to transform both the predictor and response variable.
+
+    **FALSE** : It is not necessary to transform both predictor and response variable. We can also transform predictor alone or response variable alone according to the data and the question.
+
+(d) When fitting a simple linear regression model, the most important piece of information is the R2 (coefficient of determination). An R2 close to 1 always indicates that a straight line is a good fit to the data.
+
+    **FALSE** : If R2 is close to 1 it means it is a good fit to the data , but it does not indicate that it is a straight line.
+
+(e) Transformations are useful for linearizing the relationships between the explanatory (X) and response (Y ) variables, and for overcoming problems due to nonconstant variance. 1
+
+    **TRUE**
+
+Exercise 3 : This exercise uses a data set on national statistics obtained from the United Nations, and collected between 2009-2011. To load the data into R, change your working directory to that which contains the data file and run the following command,The data set contains several variables, including ppgdp, the gross national product per person in US dollars, and fertility, the total fertility rate (number of children per woman).
+
+```{r}
+library(ggplot2)
+UN11 <- read.csv("UN11.csv")
+```
+
+a)Make a scatterplot with fertility on the y-axis and ppgdp on the x-axis. Explain why we should consider log transformations for this data.
+
+Solution :
+
+```{r}
+ggplot(UN11, aes(x = ppgdp, y = fertility)) + geom_point(col='orange')
+```
+
+b)Make a scatterplot of log(fertility) versus log(ppgdp) and add the least squares regression line. Does the association appear to be reasonably linear?
+
+Solution :
+
+```{r}
+ggplot(UN11, aes(x = log(ppgdp), y = log(fertility))) +geom_point(col='green') + geom_smooth(method = "lm", se = FALSE)
+```
+
+Yes, The association appears to be reasonably linear.
+
+c)Use the lm() function to fit a simple linear regression model with log(fertility) as the response variable, and log(ppgdp) as the explanatory variable. Use the summary() function to print the results.
+
+Solution :
+
+```{r}
+mod <- lm(log(fertility) ~ log(ppgdp), data = UN11)
+summary(mod)
+```
+
+d)  Write down the equation for the least squares line.
+
+    Solution : The equation for the least squares line is **log(fertility) = 2.66 - 0.21log(ppgdp)**
+
+e)  Interpret the slope of the regression model.
+
+    Solution : The slope of regression model is **-0.20715**, This means that As the logarithm of ppgdp increases by 1 unit , the logarithm of fertility decreases by 0.207 units.
+
+f)  For a locality not in the data with ppgdp = 1000, obtain a point prediction and a 95% prediction interval for log(fertility). If the interval (a, b) is a 95% prediction interval for log(fertility),then a 95% prediction interval for fertility is given by (exp(a), exp(b)). Use this results to get a 95% prediction interval for fertility.
+
+    Solution :
+
+```{r}
+data <- data.frame(ppgdp = 1000)
+pr <- predict.lm(mod, newdata = data , interval = "prediction", level = 0.95)
+pr
+exp(pr)
+```
+
+g)  Make a plot of the standardized residuals versus fitted values, and a QQ plot of the standardized residuals. Comment on whether or not the assumptions for simple linear regression appear to be satisfied.
+
+    Solution :
+
+```{r}
+plot(predict(mod), resid(mod), lwd = 1.5 )
+abline(h=0 , lwd = 1.5 , col = 'orange')
+```
+
+Yes,The assumptions for simple linear regression appear to be satisfied.
+
+```{r}
+qqnorm(resid(mod) , col = 4 , lwd = 1 )
+qqline(resid(mod) , col = 2 , lwd = 1.5 )
+```
+
+h)  Which countries are flagged as outliers? That is, which countries have standardized residuals outside the interval from -2 to 2. In your view, does it seem necessary to remove any of these points, and then refit the model?
+
+    Solution :
+
+```{r}
+plot(hatvalues(mod), rstandard(mod) , lwd = 1.5 ,
+xlab = "Leverage", ylab = "Standardized Residuals")
+abline(h=c(-2,2), lty=3 , lwd = 1.5)
+```
+
+In my opinion, there's no need to necessarily remove any data points as none of them exhibit problematic leverage effects.
+
+```{r}
+UN11$country[abs(rstandard(mod))>2]
+```
+
+These are the list of countries which are flagged as outliers.

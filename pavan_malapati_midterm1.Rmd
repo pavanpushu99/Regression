@@ -1,0 +1,115 @@
+---
+title: 'STAT 632: Midterm 1'
+author: "Pavan Malapati"
+date: "2024-02-20"
+output: pdf_document
+---
+
+The file midterm1data.csv contains data representing n = 104 possums in Australia and New Guinea. Use the read.csv() function in R to read in the data set
+
+```{r}
+library(ggplot2)
+mid <- read.csv("midterm1data.csv")
+```
+
+1.Building the model. In this problem we will focus on predicting head_l, the head length of the possum in mm, by using skull_w, the width of the skull in mm.
+
+a) Create a scatterplot of the data, along with marginal histograms (seperate plots are ok), and comment on the validity of the usual assumptions based only on these plots.
+
+**Solution :**
+
+```{r}
+a1 <- ggplot(data=mid, aes(skull_w,head_l)) + geom_point()+stat_smooth(method="lm")+ ggtitle("Skull Width(mm) vs Head Length(mm)")
+ggExtra::ggMarginal(a1, type='histogram')
+```
+
+For this plot, There is a non linear relationship between width of skull and headlength, The histogram of width of skull is right skewed and the histogram of headlength is bell shaped. The variance is also not constant
+
+b)Explore the use of higher order polynomial models and appropriate transformation(s) to correct for any problems you found in part (a); normality will be addressed later so you should not address that here. You should verify the adequacy of your new potential model visually with relevant plots. [Reminder: if you choose to use the poly() function, be sure to use the raw=TRUE argument]
+
+**Solution :**
+
+```{r}
+ggplot(mid, aes(skull_w, log(head_l))) + geom_point() + stat_smooth(method='lm', formula = y ~poly(x,2,raw=TRUE)) + ggtitle("Skull Width vs Log(Head Length)")
+
+mid_lm <- lm(log(head_l) ~ poly(skull_w,2, raw=TRUE), data = mid)
+plot(predict(mid_lm), resid(mid_lm))
+abline(h=0, col='orange')
+```
+
+Even after fitting the second order model by taking the log of head length, Still there is non linearity and the variance also not constant.But, The linearity was comparitively better.
+
+c) Create a QQ plot of the residuals and comment on the appropriate assumptions.
+
+**Solution :**
+
+```{r}
+qqnorm(resid(mid_lm))
+qqline(resid(mid_lm))
+```
+
+The qq plot looks good as many points doesn't deviate from the assumptions. There only minute tail points deviating from the assumptions so the QQ plot of residuals looks good.
+
+d) Regardless of your conclusions in part (c), write out the full model to be estimated (the population model to be estimated).
+
+**Solution :** log(head_l) = Beta0 + Beta1(skull_w) + Beta2(Skull_w^2) + error
+
+e) Using the rules of thumb discussed in lecture, determine which points, if any, are considered high leverage points and/or outliers. Show the code along with relevant plot(s) and provide a discussion of your findings along with how you would address any issues you find.
+
+**Solution :**
+
+```{r}
+outliers <- mid[which(abs(rstandard(mid_lm)) > 2),]
+sr <- rstandard(mid_lm)
+lev <- hatvalues(mid_lm)
+cat("The outliers of the given data are :")
+outliers
+plot(lev, sr,xlab = "Leverage",ylab = "Standardized Residuals",main = "Standardized Residuals vs Leverage")
+abline(h = 0, col = "orange")
+```
+\newpage
+2.  Inference
+
+```{=html}
+<!-- -->
+```
+a)  Test to see if the variable(s) in your model are useful in explaining the response.Show all steps. Report and interpret the R2 value.
+
+    **Solution :**
+
+```{r}
+summary(mid_lm)
+```
+
+Null hypothesis(H0): Beta1 = 0 Alternative Hypothesis (Ha) : Beta1 != 0 The p-value is less than 0.05 so we reject the null hypothesis.Therefore Beta1 is not equal to zero this shows that all the response variable are useful for calculating log(head_l). The R-square value is 0.6312 so this means that 63% of the variability in the response variable is explained by the predictor variable and the remaining is due to random variability because there are many other variables to be included.
+
+b)  Write out the estimated regression equation
+
+    **Solution :** log(head_l)=1.36 + 0.1(skull_w) - 0.0008(skull_w)\^2
+
+c)  
+
+    **Solution :** The estimated intercept of 1.36 in your model predicts the response variable's value when all predictor variables are zero, serving as a theoretical baseline. However, in real-world contexts, having all predictors at zero may not be practical or realistic, making the intercept's practical interpretation cautious. Despite this, the intercept remains important for understanding the model's behavior within the observed data range and provides insights into the model's baseline from which the effects of predictors are measured. It highlights the starting point of the response variable in the absence or minimum level of predictors, albeit with caution due to its theoretical nature in some scenarios.
+
+D)  
+
+    **Solution :**
+
+```{r}
+#log(head_l)=1.36 +0.1(55)-0.0008(55^2) = 4.503
+exp(4.503)
+exp(predict(mid_lm, data.frame(skull_w=55)))
+```
+
+The predicted output and actual output are almost similar.
+
+E)  
+
+    **Solution :**
+
+```{r}
+pred <- predict(mid_lm,data.frame(skull_w=55), interval="prediction", level = .97)
+exp(pred)
+```
+
+The 97% prediction interval for a possum with a skull width of 55mm, which ranges from 86.36 to 95.94. This interval means that we are 97% confident that the actual value for a possum's characteristic (like head length) will fall between 86.36 and 95.94, given its skull width is 55mm. It's a way to guess where most possums' measurements will be, based on this skull width, for the whole group of possums we're studying. This helps us understand and predict the characteristics of possums in this population more accurately.
