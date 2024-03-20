@@ -1,0 +1,60 @@
+---
+title: 'STAT 632 : Homework 4'
+author: "Pavan Malapati"
+date: "2024-03-17"
+output: pdf_document
+---
+
+Exercise 1
+
+![](images/1.png)
+![](images/2.png)
+
+
+Exercise 2
+
+![](images/3-01.png)
+![](images/4-01.png)
+![](images/5-01.png)
+
+Exercise 3 : For this exercise use the Boston data set from the MASS package (you can read about this data set in the help menu). Consider the multiple linear regression model with medv as the response, and dis, rm, tax and chas as predictor variables.
+
+a)  The calculated value and coefficients obtained from the lm function are same
+
+```{r}
+library(MASS)
+data(Boston)
+y <- matrix(Boston$medv, ncol = 1)
+x <- as.matrix(cbind(intercept = 1, Boston[,c('dis', 'rm','tax','chas')]))
+bh <- solve(t(x) %*% x) %*% t(x) %*% y
+bh
+```
+
+```{r}
+lin_model <- lm(medv ~ dis + rm + tax + chas ,data = Boston)
+coef(lin_model)
+```
+
+b)  The square root of diagonal entries are same as standard errors provided by lm() function.
+
+```{r}
+n <- nrow(Boston)
+p <- 4
+rv <- as.numeric(y - x %*% bh)
+sh <- sum(rv^2)/(n-p-1)
+cbh <- sh * solve(t(x) %*% x)
+cbh
+```
+
+```{r}
+sb <- sqrt(diag(cbh))
+sb
+```
+
+```{r}
+vcov(lin_model)
+```
+
+```{r}
+summary(lin_model)$coef
+```
